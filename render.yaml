@@ -1,11 +1,14 @@
 # ──────────────────────────────────────────────────────────────
 #  render.yaml — TaskFlow Deployment Blueprint
 #
+#  Database: Neon (https://neon.tech) — Free forever, no expiry
+#
 #  How to use:
-#    1. Push this repo to GitHub
-#    2. Go to https://render.com → New → Blueprint
-#    3. Connect your GitHub repo
-#    4. Render will auto-detect this file and deploy everything
+#    1. Create a free DB at https://neon.tech and copy the connection string
+#    2. Push this repo to GitHub
+#    3. Go to https://render.com → New → Blueprint
+#    4. Connect your GitHub repo
+#    5. When prompted, set DATABASE_URL to your Neon connection string
 # ──────────────────────────────────────────────────────────────
 
 services:
@@ -14,7 +17,7 @@ services:
     name: taskflow
     runtime: node
     region: singapore          # Change to: oregon, frankfurt, ohio, etc.
-    plan: free                 # Use 'starter' for always-on (paid)
+    plan: free                 # Free tier is fine — Neon handles the DB
 
     # Build & Start
     buildCommand: npm install
@@ -31,11 +34,12 @@ services:
       - key: PORT
         value: 3000
 
-      # Automatically inject the database URL from the linked DB below
+      # ⚠️ Set this manually in the Render dashboard after deploy:
+      #    Render → Your Service → Environment → Add Variable
+      #    Key:   DATABASE_URL
+      #    Value: postgresql://user:password@ep-xxx.neon.tech/taskflow?sslmode=require
       - key: DATABASE_URL
-        fromDatabase:
-          name: taskflow-db
-          property: connectionString
+        sync: false            # Tells Render to prompt you for this value
 
       # Optional: restrict CORS to your Render URL
       # - key: CORS_ORIGIN
@@ -44,11 +48,9 @@ services:
     # Auto-deploy whenever you push to the main branch
     autoDeploy: true
 
-# ── PostgreSQL Database ───────────────────────────────────────
-databases:
-  - name: taskflow-db
-    databaseName: taskflow
-    user: taskflow_user
-    region: singapore          # Must match the web service region
-    plan: free                 # Free tier: 1GB storage, 90-day expiry
-                               # Use 'starter' for persistent storage (paid)
+# ── No databases section needed — using Neon (external) ───────
+# Neon free tier benefits:
+#   ✅ No 90-day expiry (permanent free tier)
+#   ✅ 0.5 GB storage
+#   ✅ Serverless auto-scaling
+#   ✅ Built-in SSL (required by db/index.js already)
