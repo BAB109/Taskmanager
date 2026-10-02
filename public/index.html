@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Smart Daily Planner</title>
+  <meta name="description" content="A premium task management app with smart time-based notifications for your daily schedule and todos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Ambient background blobs -->
+  <div class="ambient-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Notification Bell Modal -->
+  <div id="task-alert-modal" class="task-alert-modal hidden">
+    <div class="task-alert-card">
+      <div class="alert-icon">⏰</div>
+      <div class="alert-header">
+        <span class="alert-label">Task Time!</span>
+        <h3 id="alert-task-name" class="alert-task-name">Morning Standup</h3>
+        <p id="alert-task-time" class="alert-task-time">9:00 AM – 9:30 AM</p>
+      </div>
+      <p class="alert-question">Did you complete this task?</p>
+      <div class="alert-actions">
+        <button id="alert-complete-btn" class="btn-complete" onclick="handleAlertComplete()">
+          <span>✓</span> Yes, Done!
+        </button>
+        <button id="alert-snooze-btn" class="btn-snooze" onclick="handleAlertSnooze()">
+          <span>⏭</span> Not Yet
+        </button>
+      </div>
+      <button class="alert-dismiss" onclick="dismissAlert()">✕</button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">TaskFlow</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" id="nav-schedule" onclick="switchView('schedule')" title="Daily Schedule">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Schedule</span>
+      </button>
+      <button class="nav-btn" id="nav-todo" onclick="switchView('todo')" title="To-Do List">
+        <span class="nav-icon">✅</span>
+        <span class="nav-label">To-Do</span>
+      </button>
+      <button class="nav-btn" id="nav-overview" onclick="switchView('overview')" title="Overview">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Overview</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="notif-toggle-wrap">
+        <span class="notif-icon">🔔</span>
+        <span class="notif-label">Notifications</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="notif-toggle" checked onchange="toggleNotifications(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="clock-widget" id="live-clock">19:31</div>
+      <div class="date-widget" id="live-date">Friday, Oct 2</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ===== SCHEDULE VIEW ===== -->
+    <section class="view active" id="view-schedule">
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Daily Schedule</h1>
+          <p class="view-subtitle">Time-blocked tasks with smart reminders</p>
+        </div>
+        <button class="btn-add" onclick="openModal('schedule')" id="add-schedule-btn">
+          <span>+</span> Add Task
+        </button>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-container" id="timeline">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ===== TODO VIEW ===== -->
+    <section class="view" id="view-todo">
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">To-Do List</h1>
+          <p class="view-subtitle">General tasks • Reminders at 8 AM &amp; 6 PM</p>
+        </div>
+        <button class="btn-add" onclick="openModal('todo')" id="add-todo-btn">
+          <span>+</span> Add Task
+        </button>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterTodos('all', this)" id="filter-all">All</button>
+        <button class="filter-tab" onclick="filterTodos('pending', this)" id="filter-pending">Pending</button>
+        <button class="filter-tab" onclick="filterTodos('completed', this)" id="filter-completed">Completed</button>
+      </div>
+
+      <div class="todo-list" id="todo-list">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ===== OVERVIEW VIEW ===== -->
+    <section class="view" id="view-overview">
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Overview</h1>
+          <p class="view-subtitle">Your productivity at a glance</p>
+        </div>
+      </div>
+      <div class="overview-grid" id="overview-grid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add Task Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalOutside(event)">
+    <div class="modal-card" id="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Add Scheduled Task</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <form id="task-form" onsubmit="saveTask(event)">
+        <div class="form-group">
+          <label class="form-label">Task Name</label>
+          <input type="text" class="form-input" id="task-name" placeholder="e.g. Morning Workout" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="category-pills" id="category-pills">
+            <button type="button" class="cat-pill active" data-cat="work" onclick="selectCat(this)">💼 Work</button>
+            <button type="button" class="cat-pill" data-cat="health" onclick="selectCat(this)">💪 Health</button>
+            <button type="button" class="cat-pill" data-cat="personal" onclick="selectCat(this)">🏠 Personal</button>
+            <button type="button" class="cat-pill" data-cat="study" onclick="selectCat(this)">📚 Study</button>
+            <button type="button" class="cat-pill" data-cat="other" onclick="selectCat(this)">✨ Other</button>
+          </div>
+        </div>
+
+        <div id="schedule-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Start Time</label>
+              <input type="time" class="form-input" id="task-start" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Time</label>
+              <input type="time" class="form-input" id="task-end" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-input form-textarea" id="task-notes" placeholder="Any additional details..."></textarea>
+        </div>
+
+        <div class="form-group" id="priority-group">
+          <label class="form-label">Priority</label>
+          <div class="priority-pills">
+            <button type="button" class="pri-pill active" data-pri="medium" onclick="selectPri(this)">🟡 Medium</button>
+            <button type="button" class="pri-pill" data-pri="high" onclick="selectPri(this)">🔴 High</button>
+            <button type="button" class="pri-pill" data-pri="low" onclick="selectPri(this)">🟢 Low</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save" id="save-btn">Save Task</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

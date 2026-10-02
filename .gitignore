@@ -1,0 +1,42 @@
+# ── Node.js ──────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# ── Environment ───────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Data directory (legacy JSON storage) ─────────────────────
+data/
+
+# ── SQLite / local DB files ───────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── OS Files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Editor / IDE ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── Build output ──────────────────────────────────────────────
+dist/
+build/

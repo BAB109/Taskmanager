@@ -1,0 +1,54 @@
+# ──────────────────────────────────────────────────────────────
+#  render.yaml — TaskFlow Deployment Blueprint
+#
+#  How to use:
+#    1. Push this repo to GitHub
+#    2. Go to https://render.com → New → Blueprint
+#    3. Connect your GitHub repo
+#    4. Render will auto-detect this file and deploy everything
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── Web Service (Node.js + Express) ────────────────────────
+  - type: web
+    name: taskflow
+    runtime: node
+    region: singapore          # Change to: oregon, frankfurt, ohio, etc.
+    plan: free                 # Use 'starter' for always-on (paid)
+
+    # Build & Start
+    buildCommand: npm install
+    startCommand: npm start    # Runs: node server.js
+
+    # Health check — Render pings this to confirm app is up
+    healthCheckPath: /api/health
+
+    # Environment variables
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3000
+
+      # Automatically inject the database URL from the linked DB below
+      - key: DATABASE_URL
+        fromDatabase:
+          name: taskflow-db
+          property: connectionString
+
+      # Optional: restrict CORS to your Render URL
+      # - key: CORS_ORIGIN
+      #   value: https://taskflow.onrender.com
+
+    # Auto-deploy whenever you push to the main branch
+    autoDeploy: true
+
+# ── PostgreSQL Database ───────────────────────────────────────
+databases:
+  - name: taskflow-db
+    databaseName: taskflow
+    user: taskflow_user
+    region: singapore          # Must match the web service region
+    plan: free                 # Free tier: 1GB storage, 90-day expiry
+                               # Use 'starter' for persistent storage (paid)
